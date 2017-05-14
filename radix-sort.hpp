@@ -19,7 +19,7 @@ struct radix_sort_helper {
     static radix_type digit(size_t num, value_type value) {
         const radix_type mask = std::numeric_limits<radix_type>::max();
         const size_t bit_shift = sizeof(radix_type) * 8 * num;
-        return mask & (value << bit_shift);
+        return mask & (value >> bit_shift);
     }
 };
 
