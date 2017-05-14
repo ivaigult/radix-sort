@@ -4,6 +4,7 @@
 #include <limits>
 #include <cstdint>
 #include <array>
+#include <deque>
 
 namespace detail {
 
@@ -12,13 +13,14 @@ struct radix_sort_helper {
     typedef value_t value_type;
     typedef radix_t radix_type;
     enum { num_digits = sizeof(value_type) / sizeof(radix_type) };
+    enum { bits_per_digit = sizeof(radix_type) * 8 };
     
-    typedef std::vector<value_t> bucket_type;
+    typedef std::deque<value_t> bucket_type;
     typedef std::array<bucket_type, std::numeric_limits<radix_type>::max()> array_type;
 
     static radix_type digit(size_t num, value_type value) {
         const radix_type mask = std::numeric_limits<radix_type>::max();
-        const size_t bit_shift = sizeof(radix_type) * 8 * num;
+        const size_t bit_shift = bits_per_digit * num;
         return mask & (value >> bit_shift);
     }
 };
