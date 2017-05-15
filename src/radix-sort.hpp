@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <array>
 #include <deque>
+#include <cassert>
 
 namespace detail {
 
@@ -43,15 +44,12 @@ struct bucket {
         new_node->value = v;
         new_node->tail = nullptr;
         if (!_front) {
-            _front = new_node;
+            assert(!_back);
+            _front = _back = new_node;
         }
 
-        if (!_back) {
-            _back = new_node;
-        } else {
-            _back->tail = new_node;
-            _back = new_node;
-        }
+        _back->tail = new_node;
+        _back       = new_node;
     }
 
     void clear() {
