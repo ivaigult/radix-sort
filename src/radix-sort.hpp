@@ -86,13 +86,14 @@ template<typename value_t, typename radix_t = uint8_t>
 struct radix_sort_helper {
     typedef value_t value_type;
     typedef radix_t radix_type;
-    enum { num_digits = sizeof(value_type) / sizeof(radix_type) };
-    enum { bits_per_digit = sizeof(radix_type) * 8 };    
+    enum { num_digits     = sizeof(value_type) / sizeof(radix_type) };
+    enum { bits_per_digit = sizeof(radix_type) * 8                  };
+    enum { max_digit      = std::numeric_limits<radix_type>::max()  };
+    enum { num_buckets    = max_digit + 1                           };
 
     static radix_type digit(size_t num, value_type value) {
-        const radix_type mask = std::numeric_limits<radix_type>::max();
         const size_t bit_shift = bits_per_digit * num;
-        return mask & (value >> bit_shift);
+        return max_digit & (value >> bit_shift);
     }
 };
 
@@ -105,7 +106,7 @@ void radix_sort(iterator_t begin, iterator_t end) {
     
     size_t num_elements = std::distance(begin, end);
     detail::bucket_storage<value_type> storage(num_elements);
-    std::vector<detail::bucket<value_type> > array(std::numeric_limits<typename helper_type::radix_type>::max() + 1, detail::bucket<value_type>(storage)); 
+    std::vector<detail::bucket<value_type> > array(helper_type::num_buckets, detail::bucket<value_type>(storage));
     
     for(size_t ii = 0; ii < helper_type::num_digits; ++ii) {
         for(iterator_t it = begin; it != end; ++it) {
