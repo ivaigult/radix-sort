@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 #include "radix-sort.hpp"
 
