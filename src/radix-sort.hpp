@@ -107,7 +107,7 @@ void radix_sort(iterator_t begin, iterator_t end) {
     
     size_t num_elements = std::distance(begin, end);
     detail::bucket_storage<value_type> storage(num_elements);
-    std::vector<detail::bucket<value_type> > array(std::numeric_limits<typename helper_type::radix_type>::max(), detail::bucket<value_type>(storage)); 
+    std::vector<detail::bucket<value_type> > array(std::numeric_limits<typename helper_type::radix_type>::max() + 1, detail::bucket<value_type>(storage)); 
     
     for(size_t ii = 0; ii < helper_type::num_digits; ++ii) {
         for(iterator_t it = begin; it != end; ++it) {
