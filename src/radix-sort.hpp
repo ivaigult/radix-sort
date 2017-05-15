@@ -1,11 +1,11 @@
 #pragma once
 
-#include <iterator>
-#include <limits>
-#include <cstdint>
-#include <array>
-#include <deque>
-#include <cassert>
+#include <limits>   // std::numeric_limits<...>::max()
+#include <cstdint>  // std::uint8_t
+#include <iterator> // std::iterator_traits<...>::value_type
+#include <vector>   // std::vector
+
+#include <cassert>  
 
 namespace detail {
 
