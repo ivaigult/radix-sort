@@ -21,7 +21,10 @@ struct sorter : sorter_base {
         std::vector<arithm_t> vec_to_sort(size);
         std::copy_n(std::istream_iterator<arithm_t>(std::cin), size,  vec_to_sort.begin());
 
+        auto start = std::chrono::system_clock::now();
         SORT(vec_to_sort.begin(), vec_to_sort.end());
+        auto stop = std::chrono::system_clock::now();
+        std::cerr << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
         
         std::cout << size << std::endl;
         std::copy(vec_to_sort.begin(), vec_to_sort.end(), std::ostream_iterator<arithm_t>(std::cout, " "));
