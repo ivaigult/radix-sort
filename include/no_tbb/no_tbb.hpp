@@ -30,7 +30,7 @@ void set_affinity(std::thread& thread, size_t core_index) {
 void set_affinity(std::thread& thread, size_t core_index) {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
-    CPU_SET(core_index, cpuset);
+    CPU_SET(core_index, &cpuset);
     pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpuset);
 }
 #else
