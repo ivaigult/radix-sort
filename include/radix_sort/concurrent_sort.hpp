@@ -1,69 +1,13 @@
-#pragma once
+# pragma once
 
-#include <limits>   // std::numeric_limits<...>::max()
-#include <cstdint>  // std::uint8_t
+#include "detail/detail.hpp"
+
 #include <iterator> // std::iterator_traits<...>::value_type
 #include <vector>   // std::vector
 
-#include <cassert>  
+#include <no_tbb/no_tbb.hpp>
 
-#include "no-tbb.hpp"
-
-namespace detail {
-    
-template<typename value_t, typename radix_t = uint8_t>
-struct radix_sort_helper {
-    typedef value_t value_type;
-    typedef radix_t radix_type;
-    static constexpr size_t     num_digits     = sizeof(value_type) / sizeof(radix_type);
-    static constexpr size_t     bits_per_digit = sizeof(radix_type) * 8;
-    static constexpr radix_type max_digit      = std::numeric_limits<radix_type>::max();
-    static constexpr size_t     num_buckets    = max_digit + 1;
-
-    static radix_type digit(size_t num, value_type value) {
-        const size_t bit_shift = bits_per_digit * num;
-        return max_digit & (value >> bit_shift);
-    }
-};
-
-
-}
-
-template<typename iterator_t>
-void radix_sort(iterator_t begin, iterator_t end) {
-    typedef typename std::iterator_traits<iterator_t>::value_type value_type;
-    typedef detail::radix_sort_helper<value_type> helper_type;
-
-    assert(begin <= end);
-    size_t num_elements = static_cast<size_t>(std::distance(begin, end));
-    std::vector<value_type> next_iter_array(num_elements);
-
-    for (size_t ii = 0; ii < helper_type::num_digits; ++ii) {
-        std::vector<size_t> frequency(helper_type::num_buckets);
-
-        for (size_t jj = 0; jj != num_elements; ++jj) {
-            frequency[helper_type::digit(ii, begin[jj])]++;
-        }
-
-        size_t count = 0;
-        for (size_t jj = 0; jj < helper_type::num_buckets; ++jj) {
-            size_t prev_freq = frequency[jj];
-            frequency[jj] = count;
-            count += prev_freq;
-        }
-
-        for (size_t jj = 0; jj != num_elements; ++jj) {
-            auto d = helper_type::digit(ii, begin[jj]);
-            next_iter_array[frequency[d]] = begin[jj];
-            frequency[d]++;
-        }
-
-        std::copy(next_iter_array.begin(), next_iter_array.end(), begin);
-    }
-}
-
-
-namespace no_tbb {
+namespace radix_sort {
 namespace per_thread {
 
 template<typename value_t>
@@ -74,12 +18,10 @@ struct data {
     {}
     std::vector<size_t> frequency;
 };
-    
 }
-
     
 template<typename iterator_t>
-void radix_sort(iterator_t begin, iterator_t end) {
+void concurrent_sort(iterator_t begin, iterator_t end) {
     typedef typename std::iterator_traits<iterator_t>::value_type value_type;
     typedef detail::radix_sort_helper<value_type> helper_type;
     typedef typename detail::radix_sort_helper<value_type>::radix_type radix_type;

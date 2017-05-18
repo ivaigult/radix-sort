@@ -3,14 +3,13 @@ project(radix-sort)
 
 set (CMAKE_CXX_STANDARD 11)
 
-add_executable(generate   src/generate.cpp)
+add_library(radix_sort INTERFACE)
+target_include_directories(radix_sort INTERFACE include)
 
-add_executable(quick-sort src/sort.cpp)
-target_compile_definitions(quick-sort PRIVATE SORT=std::sort)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-add_executable(radix-sort src/sort.cpp)
-target_compile_definitions(radix-sort PRIVATE SORT=radix_sort)
+option(BUILD_TOOLS "Enable building tools e.g. test/benchmarks/CLI" ON)
+if (BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
 
-add_executable(concurrent-radix-sort src/sort.cpp)
-target_compile_definitions(concurrent-radix-sort PRIVATE SORT=no_tbb::radix_sort)
- 
