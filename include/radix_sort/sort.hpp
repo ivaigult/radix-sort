@@ -15,7 +15,9 @@ void sort(iterator_t begin, iterator_t end) {
 
     assert(begin <= end);
     size_t num_elements = static_cast<size_t>(std::distance(begin, end));
-    std::vector<value_type> next_iter_array(num_elements);
+
+    typedef std::vector<detail::no_init<value_type> > no_init_vector_type;
+    no_init_vector_type next_iter_array(num_elements);
 
     for (size_t ii = 0; ii < helper_type::num_digits; ++ii) {
         std::vector<size_t> frequency(helper_type::num_buckets);
