@@ -9,7 +9,32 @@
 #include <vector>
 #include <queue>
 
+#if defined(_WIN32)
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#  include "windows.h"
+#else
+#  include <pthread.h>
+#endif
+
 namespace no_tbb {
+
+namespace __os {
+void set_affinity(std::thread& thread, size_t core_index);
+#if defined(_WIN32)
+void set_affinity(std::thread& thread, size_t core_index) {
+    DWORD_PTR affinity_mask = static_cast<DWORD_PTR>(1) << core_index;
+    SetThreadAffinityMask(thread.native_handle(), affinity_mask);
+}
+#else
+void set_affinity(std::thread& thread, size_t core_index) {
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(core_index, &cpuset);
+    pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpuset);
+}
+#endif
+}
 
 class thread_pool {
 public:
@@ -56,8 +81,10 @@ private:
     thread_pool() 
         : _exit(false)
     {
-        for (size_t ii = 0; ii < std::thread::hardware_concurrency(); ++ii)
+        for (size_t ii = 0; ii < std::thread::hardware_concurrency(); ++ii) {
             _workers.emplace_back(&thread_pool::worker_thread, this);
+            __os::set_affinity(_workers.back(), ii);
+        }
     }
     ~thread_pool() {
         std::unique_lock<std::mutex> lock(_access);
