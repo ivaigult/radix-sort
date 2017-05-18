@@ -232,13 +232,17 @@ void radix_sort(iterator_t begin, iterator_t end) {
     for (size_t ii = 0; ii < helper_type::num_digits; ++ii) {
         std::vector<per_thread::data<value_type> > thread_data(num_threads);
 
+        std::vector<value_type> next_iter_array(num_elements);
+
+        // calculate per thread frequencies
         no_tbb::parallel_for(0, num_elements, [&thread_data, ii, begin](size_t thread_id, size_t jj) {
             thread_data[thread_id].frequency[helper_type::digit(ii, begin[jj])]++;
         });
         
-        std::vector<std::vector<value_type> > buckets(helper_type::num_buckets);
+        std::vector<size_t> bucket_sizes(helper_type::num_buckets);
         
-        no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &buckets, num_threads](size_t thread_id, size_t jj) {
+        // conver frequencies to write offsets, resize buckets
+        no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &bucket_sizes, num_threads](size_t thread_id, size_t jj) {
             size_t current_sum = 0;
             size_t next_sum = 0;
             for(size_t kk = 0; kk < num_threads; ++kk) {
@@ -246,25 +250,27 @@ void radix_sort(iterator_t begin, iterator_t end) {
                 thread_data[kk].frequency[jj] = current_sum;
                 current_sum = next_sum;
             }
-            buckets[jj].resize(current_sum);
+            bucket_sizes[jj] = current_sum;
         });
 
+        // Map buckets to the next_iter_array
+        std::vector<std::vector<value_type>::iterator > buckets;
+        buckets.reserve(helper_type::num_buckets);
+        buckets.push_back(next_iter_array.begin());
+        for (size_t jj = 1; jj < helper_type::num_buckets; ++jj) {
+            buckets.push_back(buckets.back() + bucket_sizes[jj - 1]);
+        }
+
+        // populate buckets
         no_tbb::parallel_for(0, num_elements, [&thread_data, &buckets, ii, begin](size_t thread_id, size_t jj) {
             radix_type digit = helper_type::digit(ii, begin[jj]); 
             size_t write_offset = thread_data[thread_id].frequency[digit]++;
             buckets[digit][write_offset] = begin[jj]; 
         });
 
-        std::vector<size_t> write_offsets(helper_type::num_buckets);
-        for(size_t jj = 1; jj < helper_type::num_buckets; ++jj) {
-            write_offsets[jj] = write_offsets[jj - 1] + buckets[jj-1].size();
-        }
-
-        no_tbb::parallel_for(0, helper_type::num_buckets, [&buckets, &write_offsets, begin] (size_t thread_id, size_t jj) -> void {
-            iterator_t writer_it = begin + write_offsets[jj];
-            for(const value_type& value: buckets[jj]) {
-                 *(writer_it++) = value;
-            }
+        // dump buckets back to the resulting buffer
+        no_tbb::parallel_for(0, num_elements, [begin, &next_iter_array](size_t thread_id, size_t jj) -> void {
+            begin[jj] = next_iter_array[jj];
         });
     }
 }
