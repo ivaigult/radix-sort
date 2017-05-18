@@ -17,15 +17,15 @@ matrix:
     - export PATH="${PWD}/cmake-3.8.0-Linux-x86_64/bin:${PATH}"
   - env: CLANG_VERSION=3.8
     os: linux
-    compiler: clang-3.8
+    compiler: clang-3.4
     addons:
       apt:
         sources:
         - ubuntu-toolchain-r-test
         - llvm-toolchain-precise
-        - llvm-toolchain-precise-3.8
+        - llvm-toolchain-precise-3.4
         packages:
-        - clang-3.8
+        - clang-3.4
     before_install: *cmake380
 before_script:
 - mkdir _build
