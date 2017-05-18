@@ -26,13 +26,15 @@ void set_affinity(std::thread& thread, size_t core_index) {
     DWORD_PTR affinity_mask = static_cast<DWORD_PTR>(1) << core_index;
     SetThreadAffinityMask(thread.native_handle(), affinity_mask);
 }
-#else
+#elif defined(__linux__)
 void set_affinity(std::thread& thread, size_t core_index) {
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(core_index, &cpuset);
-    pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpuset);
+    cpu_set_t set;
+    CPU_ZERO(&_cpuset);
+    CPU_SET(core_index, set);
+    pthread_setaffinity_np(thread.native_handle(), sizeof(set), &cpuset);
 }
+#else
+void set_affinity(std::thread&, size_t ) {}
 #endif
 }
 

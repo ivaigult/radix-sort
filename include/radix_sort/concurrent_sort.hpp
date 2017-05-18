@@ -39,7 +39,7 @@ void concurrent_sort(iterator_t begin, iterator_t end) {
     no_init_vector_type next_iter_array(num_elements);
     std::vector<size_t>     bucket_sizes(helper_type::num_buckets);
 
-    std::vector<no_init_vector_type::iterator > buckets;
+    std::vector<typename no_init_vector_type::iterator > buckets;
     buckets.reserve(helper_type::num_buckets);
 
     for (size_t ii = 0; ii < helper_type::num_digits; ++ii) {
