@@ -1,0 +1,10 @@
+os: Visual Studio 2015
+clone_folder: c:\projects\radix-sort
+platform: x64
+configuration: Release
+before_build:
+    - mkdir c:\projects\radix-sort\_build
+    - cd c:\projects\radix-sort\_build
+    - cmake .. -G "Visual Studio 14 2015 Win64"
+build:
+    project: _build\ALL_BUILD.vcxproj
