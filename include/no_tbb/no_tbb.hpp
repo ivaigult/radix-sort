@@ -28,10 +28,10 @@ void set_affinity(std::thread& thread, size_t core_index) {
 }
 #elif defined(__linux__)
 void set_affinity(std::thread& thread, size_t core_index) {
-    cpu_set_t set;
-    CPU_ZERO(&_cpuset);
-    CPU_SET(core_index, set);
-    pthread_setaffinity_np(thread.native_handle(), sizeof(set), &cpuset);
+    cpu_set_t cputset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(core_index, cpuset);
+    pthread_setaffinity_np(thread.native_handle(), sizeof(cpu_set_t), &cpuset);
 }
 #else
 void set_affinity(std::thread&, size_t ) {}
