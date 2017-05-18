@@ -46,12 +46,13 @@ void concurrent_sort(iterator_t begin, iterator_t end) {
         std::vector<per_thread::data<value_type> > thread_data(num_threads);
 
         // calculate per thread frequencies
-        no_tbb::parallel_for(0, num_elements, [&thread_data, ii, begin](size_t thread_id, size_t jj) {
-            thread_data[thread_id].frequency[helper_type::digit(ii, begin[jj])]++;
+        no_tbb::parallel_for(0, num_elements, [&thread_data, ii, begin](size_t thread_id, size_t jj) -> void {
+            per_thread::data<value_type>& this_thread_data = thread_data[thread_id];
+            this_thread_data.frequency[helper_type::digit(ii, begin[jj])]++;
         });
                 
         // conver frequencies to write offsets, resize buckets
-        no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &bucket_sizes, num_threads](size_t thread_id, size_t jj) {
+        no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &bucket_sizes, num_threads](size_t thread_id, size_t jj) -> void {
             size_t current_sum = 0;
             size_t next_sum = 0;
             for(size_t kk = 0; kk < num_threads; ++kk) {
@@ -69,7 +70,7 @@ void concurrent_sort(iterator_t begin, iterator_t end) {
         }
 
         // populate buckets
-        no_tbb::parallel_for(0, num_elements, [&thread_data, &buckets, ii, begin](size_t thread_id, size_t jj) {
+        no_tbb::parallel_for(0, num_elements, [&thread_data, &buckets, ii, begin](size_t thread_id, size_t jj) -> void {
             radix_type digit = helper_type::digit(ii, begin[jj]); 
             size_t write_offset = thread_data[thread_id].frequency[digit]++;
             buckets[digit][write_offset] = begin[jj]; 
