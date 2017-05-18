@@ -15,7 +15,7 @@ struct sorter_base {
 
 template<typename arithm_t>
 struct sorter : sorter_base {
-    virtual void do_sort() const override {
+    virtual void do_sort() const {
         size_t size = 0;
         std::cin >> size;
         
