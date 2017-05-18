@@ -220,7 +220,6 @@ void radix_sort(iterator_t begin, iterator_t end) {
     
     assert(begin <= end);
     size_t num_elements = static_cast<size_t>(std::distance(begin, end));
-    std::vector<value_type> next_iter_array(num_elements);
 
     no_tbb::thread_pool& p = no_tbb::thread_pool::instance();
     size_t num_threads = p.num_threads();
@@ -228,19 +227,20 @@ void radix_sort(iterator_t begin, iterator_t end) {
     size_t aligned_num_elements = no_tbb::align(num_elements, num_threads);
     size_t num_elements_per_thread = aligned_num_elements / num_threads;
 
-    
+    std::vector<value_type> next_iter_array(num_elements);
+    std::vector<size_t>     bucket_sizes(helper_type::num_buckets);
+
+    std::vector<std::vector<value_type>::iterator > buckets;
+    buckets.reserve(helper_type::num_buckets);
+
     for (size_t ii = 0; ii < helper_type::num_digits; ++ii) {
         std::vector<per_thread::data<value_type> > thread_data(num_threads);
-
-        std::vector<value_type> next_iter_array(num_elements);
 
         // calculate per thread frequencies
         no_tbb::parallel_for(0, num_elements, [&thread_data, ii, begin](size_t thread_id, size_t jj) {
             thread_data[thread_id].frequency[helper_type::digit(ii, begin[jj])]++;
         });
-        
-        std::vector<size_t> bucket_sizes(helper_type::num_buckets);
-        
+                
         // conver frequencies to write offsets, resize buckets
         no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &bucket_sizes, num_threads](size_t thread_id, size_t jj) {
             size_t current_sum = 0;
@@ -254,8 +254,6 @@ void radix_sort(iterator_t begin, iterator_t end) {
         });
 
         // Map buckets to the next_iter_array
-        std::vector<std::vector<value_type>::iterator > buckets;
-        buckets.reserve(helper_type::num_buckets);
         buckets.push_back(next_iter_array.begin());
         for (size_t jj = 1; jj < helper_type::num_buckets; ++jj) {
             buckets.push_back(buckets.back() + bucket_sizes[jj - 1]);
@@ -272,6 +270,8 @@ void radix_sort(iterator_t begin, iterator_t end) {
         no_tbb::parallel_for(0, num_elements, [begin, &next_iter_array](size_t thread_id, size_t jj) -> void {
             begin[jj] = next_iter_array[jj];
         });
+
+        buckets.clear();
     }
 }
     
