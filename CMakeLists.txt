@@ -11,11 +11,6 @@ target_compile_definitions(quick-sort PRIVATE SORT=std::sort)
 add_executable(radix-sort src/sort.cpp)
 target_compile_definitions(radix-sort PRIVATE SORT=radix_sort)
 
-add_executable(no-tbb-radix-sort src/sort.cpp)
-target_compile_definitions(no-tbb-radix-sort PRIVATE SORT=no_tbb::radix_sort)
-
-add_executable(no-list-radix-sort src/sort.cpp)
-target_compile_definitions(no-list-radix-sort PRIVATE SORT=no_list::radix_sort)
-
-add_executable(no-tbb-and-list-sort src/sort.cpp)
-target_compile_definitions(no-tbb-and-list-sort PRIVATE SORT=no_list_and_tbb::radix_sort)
+add_executable(concurrent-radix-sort src/sort.cpp)
+target_compile_definitions(concurrent-radix-sort PRIVATE SORT=no_tbb::radix_sort)
+ 
