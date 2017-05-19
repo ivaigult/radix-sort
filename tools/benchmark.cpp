@@ -15,6 +15,20 @@
 #include <radix_sort/concurrent_sort.hpp>
 
 template<typename value_t>
+struct msvc_rnd_workaround {
+    typedef value_t type;
+};
+
+#if defined(_MSC_VER )
+// http://connect.microsoft.com/VisualStudio/feedbackdetail/view/856484/std-uniform-int-distribution-does-not-like-char
+template<>
+struct msvc_rnd_workaround<uint8_t>
+{
+    typedef uint16_t type;
+};
+#endif
+
+template<typename value_t>
 struct experiment {
 
     experiment(size_t size)
@@ -58,9 +72,11 @@ private:
         return std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
     }
 
-    std::random_device                     _random_device;
-    std::mt19937                           _mersenne_twister;
-    std::uniform_int_distribution<value_t> _uniform;
+    typedef typename msvc_rnd_workaround<value_t>::type rnd_value_type;
+
+    std::random_device                            _random_device;
+    std::mt19937                                  _mersenne_twister;
+    std::uniform_int_distribution<rnd_value_type> _uniform;
     
     const value_vec_t _unsorted;
     const value_vec_t _gold_sorted;
