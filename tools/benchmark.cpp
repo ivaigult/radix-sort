@@ -52,8 +52,8 @@ struct experiment {
             std::sort(result.begin(), result.end());
             return std::move(result);
         }())
-        , _std_sort_msec                  (_sorting_experiment(std::sort                  <iterator_type>))
-        , _radix_sort_sort_msec           (_sorting_experiment(radix_sort::sort           <iterator_type>))
+        // , _std_sort_msec                  (_sorting_experiment(std::sort                  <iterator_type>))
+        // , _radix_sort_sort_msec           (_sorting_experiment(radix_sort::sort           <iterator_type>))
         , _radix_sort_concurrent_sort_msec(_sorting_experiment(radix_sort::concurrent_sort<iterator_type>))
     {}
 
@@ -71,9 +71,9 @@ private:
         algorithm(sorted.begin(), sorted.end());
         std::chrono::time_point<steady_clock> end   = steady_clock::now();
 
-        if (sorted != _gold_sorted) {
-            throw std::logic_error("An implementation gave different results than std::sort");
-        }
+        // if (sorted != _gold_sorted) {
+        //     throw std::logic_error("An implementation gave different results than std::sort");
+        // }
         
         return std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
     }
@@ -87,8 +87,8 @@ private:
     const value_vec_t _unsorted;
     const value_vec_t _gold_sorted;
 
-    const uint64_t    _std_sort_msec;
-    const uint64_t    _radix_sort_sort_msec;
+    // const uint64_t    _std_sort_msec;
+    // const uint64_t    _radix_sort_sort_msec;
     const uint64_t    _radix_sort_concurrent_sort_msec;
 
 
@@ -99,7 +99,7 @@ private:
 
 template<typename value_t>
 std::ostream& operator<<(std::ostream& os, const experiment<value_t>& e) {
-    os << e._std_sort_msec << " " << e._radix_sort_sort_msec << " " << e._radix_sort_concurrent_sort_msec;
+    os << /*e._std_sort_msec << " " << e._radix_sort_sort_msec << " " <<*/ e._radix_sort_concurrent_sort_msec;
     return os;
 }
 
