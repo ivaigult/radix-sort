@@ -28,6 +28,12 @@ struct msvc_rnd_workaround<uint8_t>
 };
 #endif
 
+#if defined(__GLIBCXX__) && (__GLIBCXX__ < 20120322)
+typedef std::chrono::monotonic_clock steady_clock;
+#else
+typedef std::chrono::steady_clock steady_clock;
+#endif
+
 template<typename value_t>
 struct experiment {
 
@@ -61,9 +67,9 @@ private:
     uint64_t _sorting_experiment(void (*algorithm)(iterator_type begin, iterator_type end) ) {
         value_vec_t sorted = _unsorted;
 
-        std::chrono::time_point<std::chrono::steady_clock> begin = std::chrono::steady_clock::now();
+        std::chrono::time_point<steady_clock> begin = steady_clock::now();
         algorithm(sorted.begin(), sorted.end());
-        std::chrono::time_point<std::chrono::steady_clock> end   = std::chrono::steady_clock::now();
+        std::chrono::time_point<steady_clock> end   = steady_clock::now();
 
         if (sorted != _gold_sorted) {
             throw std::logic_error("An implementation gave different results than std::sort");
