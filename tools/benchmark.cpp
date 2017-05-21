@@ -8,11 +8,13 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <map>
 
 #include <radix_sort/sort.hpp>
 #include <radix_sort/concurrent_sort.hpp>
+#include <radix_sort/tbb_concurrent_sort.hpp>
 
 template<typename value_t>
 struct msvc_rnd_workaround {
@@ -99,7 +101,10 @@ private:
 
 template<typename value_t>
 std::ostream& operator<<(std::ostream& os, const experiment<value_t>& e) {
-    os << e._std_sort_msec << " " << e._radix_sort_sort_msec << " " << e._radix_sort_concurrent_sort_msec;
+    os << std::left << 
+        std::setw(15) << e._std_sort_msec <<
+        std::setw(15) << e._radix_sort_sort_msec <<
+        std::setw(15) << e._radix_sort_concurrent_sort_msec;
     return os;
 }
 
@@ -111,6 +116,12 @@ struct benchmark_base {
 template<typename value_t>
 struct benchmark : public benchmark_base {
     virtual void go(size_t start, size_t stop, size_t step) {
+        std::cout << std::left << 
+            std::setw(15) << "std::sort" <<
+            std::setw(15) << "radix_sort" <<
+            std::setw(15) << "concurrent_radix_sort" <<
+            std::setw(15) << "tbb_radix_concurrent_sort" <<
+            std::endl;
         for(size_t size = start; size < stop; size += step) {
             const experiment<value_t> e(size);
             std::cout << e << std::endl;
