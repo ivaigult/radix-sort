@@ -14,11 +14,16 @@ add_executable(concurrent-radix-sort sort.cpp)
 target_compile_definitions(concurrent-radix-sort PRIVATE SORT=radix_sort::concurrent_sort)
 target_link_libraries(concurrent-radix-sort radix_sort ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(benchmark benchmark.cpp)
+target_link_libraries(benchmark radix_sort ${CMAKE_THREAD_LIBS_INIT})
+
 if (TBB_FOUND)
     add_executable(tbb-concurrent-radix-sort sort.cpp)
     target_compile_definitions(tbb-concurrent-radix-sort PRIVATE SORT=radix_sort::tbb_concurrent_sort TBB_FOUND=1)
     target_link_libraries(tbb-concurrent-radix-sort radix_sort ${CMAKE_THREAD_LIBS_INIT} tbb)
+
+	target_link_libraries(benchmark tbb)
+	target_compile_definitions(benchmark PRIVATE TBB_FOUND=1)
 endif()
 
-add_executable(benchmark benchmark.cpp)
-target_link_libraries(benchmark radix_sort ${CMAKE_THREAD_LIBS_INIT})
+
