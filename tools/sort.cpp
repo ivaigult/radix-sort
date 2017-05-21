@@ -7,6 +7,8 @@
 
 #include <radix_sort/sort.hpp>
 #include <radix_sort/concurrent_sort.hpp>
+#include <radix_sort/tbb_concurrent_sort.hpp>
+
 
 struct sorter_base {
     virtual void do_sort() const = 0;
