@@ -16,6 +16,7 @@ namespace radix_sort {
 template<typename iterator_t>
 void tbb_concurrent_sort(iterator_t begin, iterator_t end) {
     tbb::task_arena task_arena;
+    task_arena.initialize(tbb::task_arena::attach{});
     typedef typename std::iterator_traits<iterator_t>::value_type value_type;
     typedef detail::radix_sort_helper<value_type> helper_type;
     typedef typename detail::radix_sort_helper<value_type>::radix_type radix_type;
