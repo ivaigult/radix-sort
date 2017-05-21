@@ -127,9 +127,7 @@ void parallel_for_each(iterator_t begin, iterator_t end, functor_t&& functor) {
         iterator_t this_thread_end   = begin + std::min(num_elements_per_thread * (1 + thread_id), num_elements);
 
         futures.emplace_back(p.async([this_thread_begin, this_thread_end, thread_id, functor]() -> void {
-            for (iterator_t it = this_thread_begin; it != this_thread_end; ++it) {
-                functor(thread_id, *it);
-            }
+            functor(thread_id, this_thread_begin, this_thread_end);
         }));
     }
 
@@ -152,9 +150,7 @@ void parallel_for(size_t begin, size_t end, functor_t&& functor) {
         size_t this_thread_end   = begin + std::min(num_elements_per_thread * (1 + thread_id), end);
 
         futures.emplace_back(p.async([this_thread_begin, this_thread_end, thread_id, functor]() -> void {
-            for (size_t ii = this_thread_begin; ii != this_thread_end; ++ii) {
-                functor(thread_id, ii);
-            }
+            functor(thread_id, this_thread_begin, this_thread_end);
         }));
     }
 

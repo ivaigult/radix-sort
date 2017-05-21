@@ -36,21 +36,25 @@ void concurrent_sort(iterator_t begin, iterator_t end) {
         std::vector<std::vector<size_t> > thread_data(num_threads, frequency_vec_t(helper_type::num_buckets));
 
         // calculate per thread frequencies
-        no_tbb::parallel_for(0, num_elements, [&thread_data, ii, begin](size_t thread_id, size_t jj) -> void {
-            frequency_vec_t& this_thread_data = thread_data[thread_id];
-            this_thread_data[helper_type::digit(ii, begin[jj])]++;
+        no_tbb::parallel_for(0, num_elements, [&thread_data, ii, begin](size_t thread_id, size_t start, size_t stop) -> void {
+            for (size_t jj = start; jj != stop; ++jj) {
+                frequency_vec_t& this_thread_data = thread_data[thread_id];
+                this_thread_data[helper_type::digit(ii, begin[jj])]++;
+            }
         });
                 
         // conver frequencies to write offsets, resize buckets
-        no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &bucket_sizes, num_threads](size_t thread_id, size_t jj) -> void {
-            size_t current_sum = 0;
-            size_t next_sum = 0;
-            for(size_t kk = 0; kk < num_threads; ++kk) {
-                size_t next_sum = current_sum + thread_data[kk][jj];
-                thread_data[kk][jj] = current_sum;
-                current_sum = next_sum;
+        no_tbb::parallel_for(0, helper_type::num_buckets, [&thread_data, &bucket_sizes, num_threads](size_t thread_id, size_t start, size_t stop) -> void {
+            for (size_t jj = start; jj != stop; ++jj) {
+                size_t current_sum = 0;
+                size_t next_sum = 0;
+                for (size_t kk = 0; kk < num_threads; ++kk) {
+                    size_t next_sum = current_sum + thread_data[kk][jj];
+                    thread_data[kk][jj] = current_sum;
+                    current_sum = next_sum;
+                }
+                bucket_sizes[jj] = current_sum;
             }
-            bucket_sizes[jj] = current_sum;
         });
 
         // Map buckets to the next_iter_array
@@ -60,15 +64,19 @@ void concurrent_sort(iterator_t begin, iterator_t end) {
         }
 
         // populate buckets
-        no_tbb::parallel_for(0, num_elements, [&thread_data, &buckets, ii, begin](size_t thread_id, size_t jj) -> void {
-            radix_type digit = helper_type::digit(ii, begin[jj]); 
-            size_t write_offset = thread_data[thread_id][digit]++;
-            buckets[digit][write_offset] = begin[jj]; 
+        no_tbb::parallel_for(0, num_elements, [&thread_data, &buckets, ii, begin](size_t thread_id, size_t start, size_t stop) -> void {
+            for (size_t jj = start; jj != stop; ++jj) {
+                radix_type digit = helper_type::digit(ii, begin[jj]);
+                size_t write_offset = thread_data[thread_id][digit]++;
+                buckets[digit][write_offset] = begin[jj];
+            }
         });
 
         // dump buckets back to the resulting buffer
-        no_tbb::parallel_for(0, num_elements, [begin, &next_iter_array](size_t thread_id, size_t jj) -> void {
-            begin[jj] = next_iter_array[jj];
+        no_tbb::parallel_for(0, num_elements, [begin, &next_iter_array](size_t thread_id, size_t start, size_t stop) -> void {
+            for (size_t jj = start; jj != stop; ++jj) {
+                begin[jj] = next_iter_array[jj];
+            }
         });
 
         buckets.clear();
