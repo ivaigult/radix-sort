@@ -42,8 +42,9 @@ void tbb_concurrent_sort(iterator_t begin, iterator_t end) {
 
         // calculate per thread frequencies
         tbb::parallel_for(tbb::blocked_range<size_t>(0, num_elements), [&thread_data, ii, begin](const tbb::blocked_range<size_t>& rr) -> void {
+            size_t thread_id = (size_t)tbb::this_task_arena::current_thread_index();
             for (size_t jj = rr.begin(); jj != rr.end(); ++jj) {
-                frequency_vec_t& this_thread_data = thread_data[(size_t) tbb::this_task_arena::current_thread_index()];
+                frequency_vec_t& this_thread_data = thread_data[thread_id];
                 this_thread_data[helper_type::digit(ii, begin[jj])]++;
             }
         }, tbb::static_partitioner{});
@@ -70,9 +71,10 @@ void tbb_concurrent_sort(iterator_t begin, iterator_t end) {
 
         // populate buckets
         tbb::parallel_for(tbb::blocked_range<size_t>(0, num_elements), [&thread_data, &buckets, ii, begin](const tbb::blocked_range<size_t>& rr) -> void {
+            size_t thread_id = (size_t)tbb::this_task_arena::current_thread_index();
             for (size_t jj = rr.begin(); jj != rr.end(); ++jj) {
                 radix_type digit = helper_type::digit(ii, begin[jj]);
-                size_t write_offset = thread_data[(size_t)tbb::this_task_arena::current_thread_index()][digit]++;
+                size_t write_offset = thread_data[thread_id][digit]++;
                 buckets[digit][write_offset] = begin[jj];
             }
         }, tbb::static_partitioner{});
