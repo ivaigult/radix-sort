@@ -26,4 +26,12 @@ if (TBB_FOUND)
 	target_compile_definitions(benchmark PRIVATE TBB_FOUND=1)
 endif()
 
+if (ITT_FOUND)
+    target_link_libraries(benchmark                 ittnotify)
+    target_link_libraries(concurrent-radix-sort     ittnotify)
+    target_link_libraries(tbb-concurrent-radix-sort ittnotify)
 
+    target_compile_definitions(benchmark                 PRIVATE ITT_FOUND=1)
+    target_compile_definitions(concurrent-radix-sort     PRIVATE ITT_FOUND=1)
+    target_compile_definitions(tbb-concurrent-radix-sort PRIVATE ITT_FOUND=1)
+endif()
